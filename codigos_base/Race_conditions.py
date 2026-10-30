@@ -64,4 +64,26 @@ def treat_client(connection, address):
     finally:
         connection.close()
 
+def start_server():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET é módulo de definição do IPV4 e SOCK_STREAM de TCP
+    #Aqui criamos o socket TCP
 
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    server.bind((HOST, PORT)) #O bind() associa o socket criado na variavel server com o endereço (Host e Port)
+    server.listen() #Põe o socket em modo passivo (listen de escutar). Todos os terminais passam a ser aceitos pela porta 5000
+
+    print(f"=== SERVIDOR SASE MULTITHREAD ONLINE [{HOST}:{PORT}] ===")
+
+    while True:
+        connection, address = server.accept() #O accept() torna o laço em "banho maria" até a execução do connect para descongelar
+
+        thread_client = threading.Thread(
+            target=treat_client(),
+            args= (connection, address),
+            daemon= True
+        )
+        thread_client.start()
+
+if __name__ == '__main__':
+    start_server()
